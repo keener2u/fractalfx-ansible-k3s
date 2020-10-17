@@ -1,0 +1,23 @@
+- name: Create Linode
+  hosts: localhost
+  vars_files:
+      - ./group_vars/k3s_group/vars
+  tasks:
+  - name: Create a new Linode.
+    linode_v4:
+      label: "{{ label }}{{ item }}"
+      access_token: "{{ token }}"
+      type: g6-nanode-1
+      region: us-west
+      image: linode/ubuntu18.04
+      root_pass: "{{ password }}"
+      authorized_keys: "{{ ssh_keys }}"
+      group: k3s_group
+      tags: k3s_group
+      state: present
+    loop:
+    - "01"
+    - "02"
+    - "03"
+    register: my_linode
+    
