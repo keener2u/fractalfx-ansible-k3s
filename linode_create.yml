@@ -1,9 +1,27 @@
-- name: Create Linode
+- name: Create First Linode
   hosts: localhost
   vars_files:
       - ./group_vars/k3s_group/vars
+  gather_facts: true
+  connection: local
+  roles:
+    - role: vandot.k3sup.k3sup
   tasks:
   - name: Create a new Linode.
+    linode_v4:
+      label: "{{ label }}01"
+      access_token: "{{ token }}"
+      type: g6-nanode-1
+      region: us-west
+      image: linode/ubuntu18.04
+      root_pass: "{{ password }}"
+      authorized_keys: "{{ ssh_keys }}"
+      group: k3s_group
+      tags: k3s_group
+      state: present
+    register: k3s_server
+
+  - name: Create nodes.
     linode_v4:
       label: "{{ label }}{{ item }}"
       access_token: "{{ token }}"
@@ -16,8 +34,21 @@
       tags: k3s_group
       state: present
     loop:
-    - "01"
-    - "02"
-    - "03"
-    register: my_linode
-    
+      - "02"
+      - "03"
+    register: k3s_agent
+
+  - name: Install k3s server on k3s-server
+    vandot.k3sup.k3sup:
+      action: server
+      ip: "{{ k3s_server.instance.ipv4[0] }}"
+      ssh_key: "~/.ssh/id_rsa"
+
+  - name: Install k3s agent on k3s-agents
+    vandot.k3sup.k3sup:
+      action: agent
+      ip: "{{ item.instance.ipv4[0] }}"
+      server_ip: "{{ k3s_server.instance.ipv4[0] }}"
+      ssh_key: "~/.ssh/id_rsa"
+    with_items:
+      - "{{k3s_agent.results}}"
