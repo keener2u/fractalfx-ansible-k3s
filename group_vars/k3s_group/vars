@@ -1,6 +1,6 @@
 ssh_keys: >
         ['~/.ssh/id_rsa.pub']
-label: k3s-node-
+label: k3sNode
 token: !vault |
           $ANSIBLE_VAULT;1.1;AES256
           38393566303564366165656135323435666232633761656336393262303233653438386662323630

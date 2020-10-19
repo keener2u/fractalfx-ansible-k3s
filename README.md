@@ -5,17 +5,25 @@ How-to
 -pip install linode_api4
 -ansible-galaxy collection install community.general
 -change /group_vars/k3s_group/vars to include vault password and token for your setup
--run ansible-playbook linode_create.yml
+-setup an session key enviornment variable
+--export LINODE_ACCESS_TOKEN=$(cat /home/keener2u/.ssh/token)
+-make sure you turn on ssh-agent and add your key 
+-run ansible-playbook -i linode.yml main.yml
 
 
 
 Creates three Lindodes
-Todo:
 Secures and turns on the firewall
-Secures SSHD to only accept pub/priv key
+Opens up the ports for k3s distributed etcd
 sets hostname
-Opens up the ports for k3s
 installs k3sup
+initializes first server with --cluster
+initilies node 2-n as --server
+
+
+Todo:
+Secures SSHD to only accept pub/priv key
+add in handlers to wait until linodes are built before proceeding
 install helm
 installs ca-cert
 installs rancher

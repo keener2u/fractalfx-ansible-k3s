@@ -1,0 +1,30 @@
+- name: Install first k3s server
+  hosts: k3s_group[0]
+  gather_facts: true
+  connection: local
+  roles:
+    - role: vandot.k3sup.k3sup
+  tasks:
+  - name: Install k3s server on k3s-server
+    vandot.k3sup.k3sup:
+      cluster: True
+      action: server
+      ip: "{{ipv4[0]}}"
+      ssh_key: "~/.ssh/id_rsa"
+    register: k3s_server
+  - debug: var=hostvars['k3sNode01']['ipv4'][0]
+  
+- name: Join all other servers
+  hosts: k3s_group[1:]
+  gather_facts: true
+  connection: local
+  roles:
+    - role: vandot.k3sup.k3sup
+  tasks:
+  - name: Install k3s agent on k3s-agents
+    vandot.k3sup.k3sup:
+      server: True
+      action: agent
+      ip: "{{ipv4[0]}}"
+      server_ip: "{{hostvars['k3sNode01']['ipv4'][0]}}"
+      ssh_key: "~/.ssh/id_rsa"

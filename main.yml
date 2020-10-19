@@ -1,0 +1,3 @@
+- import_playbook: linode_create.yml
+- import_playbook: linode_configure.yml
+- import_playbook: k3s_install.yml

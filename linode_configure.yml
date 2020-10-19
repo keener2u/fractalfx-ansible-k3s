@@ -1,0 +1,73 @@
+- name: Secure Linode by defaulting deny and permit only k3s ports and ssh
+  hosts: k3s_group
+  become: true
+  become_user: root
+  tasks:
+  - name: Update apt-get repo and cache
+    apt: update_cache=yes force_apt_get=yes cache_valid_time=3600
+
+  - name: Upgrade all apt packages
+    apt: upgrade=dist force_apt_get=yes
+
+  - name: allow SSH
+    community.general.ufw:
+      rule: allow
+      port: ssh
+      proto: tcp
+  - debug:
+      msg: 
+    loop: "{{ groups['all'] }}"
+
+  - name: Allow all access to port 10250
+    community.general.ufw:
+      rule: allow
+      port: '10250'
+      proto: tcp
+
+  - name: Allow all access to port 8472
+    community.general.ufw:
+      rule: allow
+      port: '8472'
+      proto: tcp
+
+  - name: Allow all access to port 6443
+    community.general.ufw:
+      rule: allow
+      port: '6443'
+      proto: tcp
+      src: "{{ hostvars[item]['ansible_eth0']['ipv4']['address'] }}"
+    loop: "{{ groups['k3s_group']}}"
+
+  - name: Allow all access to port 2378
+    community.general.ufw:
+      rule: allow
+      port: '2378'
+      proto: tcp
+      src: "{{ hostvars[item]['ansible_eth0']['ipv4']['address'] }}"
+    loop: "{{ groups['k3s_group']}}"
+
+  - name: Allow all access to port 2380
+    community.general.ufw:
+      rule: allow
+      port: '2380'
+      proto: tcp
+      src: "{{ hostvars[item]['ansible_eth0']['ipv4']['address'] }}"
+    loop: "{{ groups['k3s_group']}}"
+  - name: Deny everything and enable UFW
+    community.general.ufw:
+      state: enabled
+      policy: deny
+  
+  - name: Set a hostname
+    hostname:
+      name: "{{inventory_hostname}}"
+
+  - name: add myself to /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: '^127\.0\.0\.1[ \t]+localhost'
+      line: '127.0.0.1 localhost {{inventory_hostname}}'
+      state: present
+
+  
+

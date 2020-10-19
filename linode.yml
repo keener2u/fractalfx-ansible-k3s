@@ -1,0 +1,7 @@
+plugin: linode
+regions:
+  - us-west
+groups:
+  - k3s_group
+types:
+  - g6-nanode-1
